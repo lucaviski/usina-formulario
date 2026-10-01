@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Registro de Campo — Usina</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#14161A; --panel:#1B1E23; --panel-2:#20242A; --border:#2B3038; --border-soft:#242830;
+    --text:#EDEEF0; --muted:#8B909A; --muted-2:#5F6570;
+    --amber:#E8A33D; --amber-dim:#4A3A1E; --teal:#4FB286; --teal-dim:#1B3A2E; --rust:#E1573A; --rust-dim:#402019;
+    --font-display:'Space Grotesk', system-ui, sans-serif;
+    --font-body:'IBM Plex Sans', system-ui, sans-serif;
+    --font-mono:'IBM Plex Mono', ui-monospace, monospace;
+  }
+  :root:not([data-theme="light"]){ color-scheme: dark; }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#F3F2EE; --panel:#FFFFFF; --panel-2:#F8F7F4; --border:#DEDCD5; --border-soft:#E7E5DF;
+      --text:#181A1D; --muted:#5C6068; --muted-2:#8A8E96; --amber-dim:#FBE6C4; --teal-dim:#DCF0E6; --rust-dim:#FBDFD9;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#F3F2EE; --panel:#FFFFFF; --panel-2:#F8F7F4; --border:#DEDCD5; --border-soft:#E7E5DF;
+    --text:#181A1D; --muted:#5C6068; --muted-2:#8A8E96; --amber-dim:#FBE6C4; --teal-dim:#DCF0E6; --rust-dim:#FBDFD9;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{ background:var(--bg); color:var(--text); font-family:var(--font-body); min-height:100vh; -webkit-font-smoothing:antialiased; }
+  .wrap{ max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; padding-bottom:24px; }
+
+  header{ padding:16px 16px 10px; }
+  .brand{ font-family:var(--font-display); font-size:15px; font-weight:700; display:flex; align-items:center; gap:8px; }
+  .brand .dot{ width:9px; height:9px; border-radius:50%; background:var(--amber); flex:none; }
+  .sync-status{ font-size:11px; color:var(--muted-2); margin-top:3px; font-family:var(--font-mono); padding-left:17px; }
+  .sync-status.pend{ color:var(--amber); }
+  .sync-status.err{ color:var(--rust); }
+
+  .switcher{ display:flex; gap:6px; padding:2px 16px 14px; }
+  .switch-btn{
+    flex:1; font-family:var(--font-body); font-weight:600; font-size:14px; color:var(--muted);
+    background:var(--panel); border:1px solid var(--border); padding:13px 10px; border-radius:8px; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:3px; transition:border-color .15s, color .15s, background .15s;
+  }
+  .switch-btn .ic{ font-size:19px; line-height:1; }
+  .switch-btn.active{ background:var(--amber-dim); border-color:var(--amber); color:var(--text); }
+
+  main{ flex:1; padding:0 16px; }
+  .screen{ display:none; }
+  .screen.active{ display:block; animation:fade .15s ease; }
+  @keyframes fade{ from{opacity:0;} to{opacity:1;} }
+
+  h1.title{ font-family:var(--font-display); font-size:19px; font-weight:700; margin:2px 0 3px; }
+  .subtitle{ color:var(--muted); font-size:13px; margin:0 0 18px; line-height:1.4; }
+
+  .group{ margin-bottom:18px; }
+  .group-label{ font-size:12.5px; color:var(--muted); font-weight:600; margin-bottom:8px; display:flex; justify-content:space-between; align-items:baseline; }
+  .group-label .unit{ font-family:var(--font-mono); color:var(--muted-2); font-weight:500; }
+
+  .chips{ display:flex; flex-wrap:wrap; gap:8px; }
+  .chip{
+    font-family:var(--font-body); font-weight:600; font-size:13.5px; color:var(--text);
+    background:var(--panel); border:1.5px solid var(--border); padding:11px 16px; border-radius:8px; cursor:pointer;
+    transition:border-color .12s, background .12s;
+  }
+  .chip.selected{ background:var(--amber); border-color:var(--amber); color:#161514; }
+  .chip.material{ display:flex; flex-direction:column; align-items:center; gap:4px; min-width:84px; padding:12px 8px; }
+  .chip.material .u{ font-family:var(--font-mono); font-size:10.5px; color:var(--muted-2); }
+  .chip.material.selected .u{ color:#161514cc; }
+
+  .other-input{ margin-top:8px; }
+  .other-input input{ font-size:14px; padding:10px 12px; }
+
+  input, textarea, select{
+    width:100%; font-family:var(--font-body); font-size:16px; color:var(--text);
+    background:var(--panel); border:1.5px solid var(--border); border-radius:8px; padding:13px 14px;
+  }
+  input:focus, textarea:focus{ outline:2px solid var(--amber); outline-offset:-1px; border-color:var(--amber); }
+  textarea{ resize:vertical; min-height:64px; }
+  .num-field{ position:relative; }
+  .num-field input{ font-family:var(--font-mono); font-size:22px; font-weight:600; padding:14px 52px 14px 14px; }
+  .num-field .unit-badge{
+    position:absolute; right:14px; top:50%; transform:translateY(-50%);
+    font-family:var(--font-mono); font-size:13px; color:var(--muted); pointer-events:none;
+  }
+
+  .time-row{ display:flex; gap:10px; align-items:flex-end; }
+  .time-row .field{ flex:1; }
+  .time-row .field label{ display:block; font-size:11.5px; color:var(--muted); margin-bottom:6px; }
+  .now-btn{
+    font-family:var(--font-body); font-weight:600; font-size:12.5px; color:var(--text);
+    background:var(--panel-2); border:1px solid var(--border); border-radius:6px; padding:12px 10px; cursor:pointer; white-space:nowrap;
+  }
+  .horas-readout{ font-family:var(--font-mono); font-size:12px; color:var(--muted); margin-top:6px; }
+
+  .link-btn{ background:none; border:none; color:var(--amber); font-family:var(--font-body); font-weight:600; font-size:12px; cursor:pointer; padding:0; }
+  .link-btn:active{ opacity:.7; }
+  .traco-readout{ font-family:var(--font-mono); font-size:13px; color:var(--muted); background:var(--panel); border:1.5px solid var(--border); border-radius:8px; padding:12px 14px; line-height:1.6; }
+  .traco-readout b{ color:var(--text); font-weight:600; }
+  .traco-edit-grid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:10px; }
+  .traco-edit-grid .field label{ display:block; font-size:10.5px; color:var(--muted); margin-bottom:5px; }
+  .traco-edit-grid input{ font-family:var(--font-mono); font-size:14px; padding:10px 8px; text-align:center; }
+
+  .stock-strip{ display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; }
+  .stock-chip{ min-width:0; background:var(--panel); border:1.5px solid var(--border); border-radius:7px; padding:8px 7px; }
+  .stock-chip.bad{ border-color:var(--rust-dim); }
+  .stock-chip.warn{ border-color:var(--amber-dim); }
+  .stock-chip .sc-mat{ font-size:9.5px; color:var(--muted); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .stock-chip .sc-val{ font-family:var(--font-mono); font-size:12.5px; font-weight:600; margin-top:3px; white-space:nowrap; }
+  .stock-chip.bad .sc-val{ color:var(--rust); }
+  .stock-chip.warn .sc-val{ color:var(--amber); }
+  .stock-chip .sc-bar{ height:3px; border-radius:2px; margin-top:6px; background:var(--panel-2); overflow:hidden; }
+  .stock-chip .sc-bar > div{ height:100%; border-radius:2px; }
+  .stock-empty{ font-size:12.5px; color:var(--muted-2); padding:10px 2px; grid-column:1/-1; }
+
+  .capacity-banner{ background:var(--panel); border:1.5px solid var(--border); border-radius:8px; padding:11px 14px; margin-bottom:8px; }
+  .capacity-banner .cb-num{ font-family:var(--font-mono); font-size:21px; font-weight:700; color:var(--text); line-height:1.2; }
+  .capacity-banner .cb-num small{ font-family:var(--font-body); font-size:12px; font-weight:500; color:var(--muted); }
+  .capacity-banner .cb-label{ font-size:11px; color:var(--muted); margin-top:2px; }
+  .capacity-banner.warn{ border-color:var(--amber-dim); }
+  .capacity-banner.bad{ border-color:var(--rust-dim); }
+  .capacity-banner.warn .cb-num{ color:var(--amber); }
+  .capacity-banner.bad .cb-num{ color:var(--rust); }
+
+  .toggle-row{ display:flex; align-items:center; justify-content:space-between; padding:13px 14px; background:var(--panel); border:1.5px solid var(--border); border-radius:8px; }
+  .toggle-row span{ font-size:14px; font-weight:500; }
+  .switch{ width:44px; height:26px; background:var(--panel-2); border:1.5px solid var(--border); border-radius:14px; position:relative; cursor:pointer; flex:none; }
+  .switch::after{ content:""; position:absolute; width:19px; height:19px; border-radius:50%; background:var(--muted); top:2px; left:2px; transition:left .15s, background .15s; }
+  .switch.on{ background:var(--amber-dim); border-color:var(--amber); }
+  .switch.on::after{ left:21px; background:var(--amber); }
+
+  details.more{ margin-top:2px; }
+  details.more summary{
+    list-style:none; cursor:pointer; font-size:13.5px; font-weight:600; color:var(--muted);
+    display:flex; align-items:center; gap:6px; padding:8px 2px;
+  }
+  details.more summary::-webkit-details-marker{ display:none; }
+  details.more summary .arrow{ transition:transform .15s; font-size:11px; }
+  details.more[open] summary .arrow{ transform:rotate(90deg); }
+  details.more .more-body{ padding-top:8px; display:flex; flex-direction:column; gap:16px; }
+
+  .submit-btn{
+    width:100%; font-family:var(--font-display); font-weight:700; font-size:16px; color:#161514;
+    background:var(--amber); border:none; padding:17px; border-radius:10px; cursor:pointer; margin-top:22px;
+  }
+  .submit-btn:active{ transform:scale(.985); }
+  .submit-btn:disabled{ opacity:.5; }
+
+  .today{ margin-top:26px; }
+  .today-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:9px; }
+  .today-head h3{ font-family:var(--font-display); font-size:13px; margin:0; color:var(--muted); font-weight:600; text-transform:none; }
+  .today-item{
+    background:var(--panel); border:1px solid var(--border-soft); border-radius:8px; padding:11px 13px;
+    display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:7px; font-size:13px;
+  }
+  .today-item .ti-main{ line-height:1.4; }
+  .today-item .ti-main b{ font-family:var(--font-mono); }
+  .today-item .ti-sync{ font-size:10.5px; font-family:var(--font-mono); flex:none; padding:3px 7px; border-radius:4px; }
+  .ti-sync.ok{ background:var(--teal-dim); color:var(--teal); }
+  .ti-sync.pend{ background:var(--amber-dim); color:var(--amber); }
+  .ti-empty{ color:var(--muted-2); font-size:12.5px; padding:10px 2px; }
+
+  /* success overlay */
+  .overlay{
+    position:fixed; inset:0; background:color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter:blur(2px);
+    display:flex; align-items:center; justify-content:center; z-index:50; opacity:0; pointer-events:none; transition:opacity .18s;
+  }
+  .overlay.show{ opacity:1; pointer-events:auto; }
+  .ok-card{ background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:30px 34px; text-align:center; max-width:280px; }
+  .ok-mark{
+    width:52px; height:52px; border-radius:50%; background:var(--teal-dim); color:var(--teal);
+    display:flex; align-items:center; justify-content:center; margin:0 auto 14px; font-size:26px;
+  }
+  .ok-card h4{ font-family:var(--font-display); font-size:16px; margin:0 0 4px; }
+  .ok-card p{ font-size:12.5px; color:var(--muted); margin:0; }
+
+  footer.foot{ padding:18px 16px 4px; color:var(--muted-2); font-size:10.5px; text-align:center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><span class="dot"></span>Usina de Asfalto</div>
+    <div class="sync-status" id="sync-status">verificando sincronização…</div>
+  </header>
+
+  <div class="switcher">
+    <button class="switch-btn" id="sw-producao" data-screen="producao"><span class="ic">🛣️</span>Produção</button>
+    <button class="switch-btn" id="sw-materiais" data-screen="materiais"><span class="ic">📦</span>Materiais</button>
+    <button class="switch-btn" id="sw-compras" data-screen="compras"><span class="ic">💳</span>Compras</button>
+  </div>
+
+  <main>
+    <!-- ===== PRODUÇÃO ===== -->
+    <div class="screen" id="screen-producao">
+      <h1 class="title">Lançamento de produção</h1>
+      <p class="subtitle">Preencha ao final de cada mistura. Os campos que se repetem no turno ficam marcados.</p>
+
+      <div class="group">
+        <div class="group-label">Estoque disponível na usina<span class="unit" id="estoque-resumo-updated-producao">carregando…</span></div>
+        <div class="capacity-banner" id="capacity-banner-producao"><div class="cb-num">— <small>t possíveis</small></div><div class="cb-label">calculando com o estoque atual…</div></div>
+        <div class="stock-strip" id="stock-strip-producao"><div class="stock-empty">Carregando estoque…</div></div>
+      </div>
+
+      <form id="form-producao">
+        <div class="group">
+          <div class="group-label">Obra</div>
+          <div class="chips" id="chips-obra"></div>
+          <div class="other-input" id="other-obra-wrap" style="display:none;"><input id="obra-other" placeholder="Nome da obra"></div>
+        </div>
+
+        <div class="group">
+          <div class="group-label">Operador</div>
+          <div class="chips" id="chips-operador"></div>
+          <div class="other-input" id="other-operador-wrap" style="display:none;"><input id="operador-other" placeholder="Seu nome"></div>
+        </div>
+
+        <div class="group">
+          <div class="group-label">Horário</div>
+          <div class="time-row">
+            <div class="field"><label>Início</label><input type="time" id="p-hi"></div>
+            <div class="field"><label>Fim</label><input type="time" id="p-hf"></div>
+            <button type="button" class="now-btn" id="btn-marcar-fim">Marcar agora</button>
+          </div>
+          <div class="horas-readout" id="p-horas-readout">—</div>
+        </div>
+
+        <div class="group">
+          <div class="group-label">Produção<span class="unit">toneladas</span></div>
+          <div class="num-field"><input type="number" inputmode="decimal" step="0.1" min="0" id="p-producao" required><span class="unit-badge">t</span></div>
+        </div>
+
+        <div class="group">
+          <div class="group-label">Traço da mistura<button type="button" class="link-btn" id="btn-ajustar-traco">Ajustar</button></div>
+          <div class="traco-readout" id="traco-readout">Informe a produção para calcular</div>
+          <div id="traco-edit" style="display:none; margin-top:0;">
+            <div class="traco-edit-grid">
+              <div class="field"><label>Areia (t)</label><input type="number" step="0.01" min="0" id="p-areia-custom"></div>
+              <div class="field"><label>Brita 0 (t)</label><input type="number" step="0.01" min="0" id="p-brita-custom"></div>
+              <div class="field"><label>Pó de brita (t)</label><input type="number" step="0.01" min="0" id="p-po-custom"></div>
+            </div>
+            <div class="field" style="margin-top:10px;">
+              <label style="display:block; font-size:11.5px; color:var(--muted); margin-bottom:6px;">Motivo de sair do padrão <span style="color:var(--rust)">obrigatório</span></label>
+              <textarea id="p-traco-motivo" placeholder="Ex.: agregado mais úmido hoje, ajuste manual do operador"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group-label">CAP utilizado<span class="unit">toneladas</span></div>
+          <div class="num-field"><input type="number" inputmode="decimal" step="0.01" min="0" id="p-cap"><span class="unit-badge">t</span></div>
+        </div>
+
+        <div class="group">
+          <div class="group-label">Óleo de queima<span class="unit">litros</span></div>
+          <div class="num-field"><input type="number" inputmode="decimal" step="1" min="0" id="p-oleo"><span class="unit-badge">L</span></div>
+        </div>
+
+        <div class="group">
+          <div class="group-label">Diesel gerador<span class="unit">litros</span></div>
+          <div class="num-field"><input type="number" inputmode="decimal" step="1" min="0" id="p-diesel"><span class="unit-badge">L</span></div>
+        </div>
+
+        <div class="group">
+          <div class="toggle-row" id="toggle-parada"><span>Houve parada?</span><div class="switch" id="switch-parada"></div></div>
+          <div id="parada-detail" style="display:none; margin-top:12px;">
+            <div class="group-label">Tempo parado<span class="unit">horas</span></div>
+            <div class="num-field" style="margin-bottom:12px;"><input type="number" inputmode="decimal" step="0.1" min="0" id="p-parada"><span class="unit-badge">h</span></div>
+            <div class="group-label">Motivo</div>
+            <div class="chips" id="chips-motivo">
+              <button type="button" class="chip" data-val="Mecânica">Mecânica</button>
+              <button type="button" class="chip" data-val="Elétrica">Elétrica</button>
+              <button type="button" class="chip" data-val="Falta de material">Falta de material</button>
+              <button type="button" class="chip" data-val="Abastecimento">Abastecimento</button>
+              <button type="button" class="chip" data-val="Clima">Clima</button>
+              <button type="button" class="chip" data-val="Operacional">Operacional</button>
+              <button type="button" class="chip" data-val="Outro">Outro</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group-label">Observação<span class="unit">opcional</span></div>
+          <textarea id="p-obs" placeholder="Opcional"></textarea>
+        </div>
+
+        <button type="submit" class="submit-btn" id="btn-submit-producao">Salvar lançamento</button>
+      </form>
+
+      <div class="today">
+        <div class="today-head"><h3>Hoje</h3></div>
+        <div id="today-producao"></div>
+      </div>
+    </div>
+
+    <!-- ===== MATERIAIS ===== -->
+    <div class="screen" id="screen-materiais">
+      <h1 class="title">Entrada de materiais</h1>
+      <p class="subtitle">Registre assim que o material chegar fisicamente na usina.</p>
+
+      <div class="group">
+        <div class="group-label">Estoque disponível na usina<span class="unit" id="estoque-resumo-updated-materiais">carregando…</span></div>
+        <div class="capacity-banner" id="capacity-banner-materiais"><div class="cb-num">— <small>t possíveis</small></div><div class="cb-label">calculando com o estoque atual…</div></div>
+        <div class="stock-strip" id="stock-strip-materiais"><div class="stock-empty">Carregando estoque…</div></div>
+      </div>
+
+      <form id="form-estoque">
+        <div class="group">
+          <div class="group-label">Material</div>
+          <div class="chips" id="chips-material">
+            <button type="button" class="chip material" data-val="Areia"><span>Areia</span><span class="u">t</span></button>
+            <button type="button" class="chip material" data-val="Brita 0"><span>Brita 0</span><span class="u">t</span></button>
+            <button type="button" class="chip material" data-val="Pó de Brita"><span>Pó de Brita</span><span class="u">t</span></button>
+            <button type="button" class="chip material" data-val="CAP"><span>CAP</span><span class="u">t</span></button>
+            <button type="button" class="chip material" data-val="Óleo de Queima"><span>Óleo de Queima</span><span class="u">L</span></button>
+            <button type="button" class="chip material" data-val="Diesel"><span>Diesel</span><span class="u">L</span></button>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group-label">Quantidade<span class="unit" id="e-unit-label">—</span></div>
+          <div class="num-field"><input type="number" inputmode="decimal" step="0.01" min="0" id="e-qtd" required><span class="unit-badge" id="e-unit-badge">—</span></div>
+        </div>
+
+        <div class="group">
+          <div class="group-label">Fornecedor / origem<span class="unit">opcional</span></div>
+          <div class="chips" id="chips-fornecedor"></div>
+          <div class="other-input" id="other-fornecedor-wrap" style="display:none;"><input id="fornecedor-other" placeholder="Nome do fornecedor"></div>
+        </div>
+
+        <div class="group">
+          <div class="group-label">Documento (NF)<span class="unit">opcional</span></div>
+          <input id="e-doc" placeholder="Número da nota, se souber — deixe em branco se não tiver">
+        </div>
+
+        <div class="group">
+          <div class="group-label">Responsável pelo recebimento</div>
+          <input id="e-resp" placeholder="Seu nome">
+        </div>
+
+        <div class="group">
+          <div class="group-label">Observação<span class="unit">opcional</span></div>
+          <textarea id="e-obs" placeholder="Opcional"></textarea>
+        </div>
+
+        <button type="submit" class="submit-btn" id="btn-submit-estoque">Salvar entrada</button>
+      </form>
+
+      <div class="today">
+        <div class="today-head"><h3>Hoje</h3></div>
+        <div id="today-estoque"></div>
+      </div>
+    </div>
+
+    <!-- ===== COMPRAS (Rafael) ===== -->
+    <div class="screen" id="screen-compras">
+      <h1 class="title">Compras</h1>
+      <p class="subtitle">Preenchido a partir do comprovante de pagamento — sem quantidade, só o que se sabe de verdade.</p>
+
+      <div class="group">
+        <div class="group-label">Estoque disponível na usina<span class="unit" id="estoque-resumo-updated-compras">carregando…</span></div>
+        <div class="capacity-banner" id="capacity-banner-compras"><div class="cb-num">— <small>t possíveis</small></div><div class="cb-label">calculando com o estoque atual…</div></div>
+        <div class="stock-strip" id="stock-strip-compras"><div class="stock-empty">Carregando estoque…</div></div>
+      </div>
+
+      <form id="form-compra">
+        <div class="group">
+          <div class="group-label">Fornecedor</div>
+          <div class="chips" id="chips-fornecedor-compra"></div>
+          <div class="other-input" id="other-fornecedor-compra-wrap" style="display:none;"><input id="fornecedor-compra-other" placeholder="Nome do fornecedor"></div>
+        </div>
+
+        <div class="group">
+          <div class="group-label">Material</div>
+          <div class="chips" id="chips-material-compra">
+            <button type="button" class="chip material" data-val="Areia"><span>Areia</span><span class="u">t</span></button>
+            <button type="button" class="chip material" data-val="Brita 0"><span>Brita 0</span><span class="u">t</span></button>
+            <button type="button" class="chip material" data-val="Pó de Brita"><span>Pó de Brita</span><span class="u">t</span></button>
+            <button type="button" class="chip material" data-val="CAP"><span>CAP</span><span class="u">t</span></button>
+            <button type="button" class="chip material" data-val="Óleo de Queima"><span>Óleo de Queima</span><span class="u">L</span></button>
+            <button type="button" class="chip material" data-val="Diesel"><span>Diesel</span><span class="u">L</span></button>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group-label">Valor pago<span class="unit">R$</span></div>
+          <div class="num-field"><input type="number" inputmode="decimal" step="0.01" min="0" id="c-valor" required><span class="unit-badge">R$</span></div>
+        </div>
+
+        <div class="group">
+          <div class="group-label">Documento / referência<span class="unit">opcional</span></div>
+          <input id="c-documento" placeholder="Nº, comprovante Pix, etc. — deixe em branco se não tiver">
+        </div>
+
+        <div class="group">
+          <div class="group-label">Observação<span class="unit">opcional</span></div>
+          <textarea id="c-obs" placeholder="Opcional"></textarea>
+        </div>
+
+        <button type="submit" class="submit-btn" id="btn-submit-compra">Salvar compra</button>
+      </form>
+
+      <div class="today">
+        <div class="today-head"><h3>Hoje</h3></div>
+        <div id="today-compras"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="foot">Os dados ficam salvos e sincronizados para toda a equipe.</footer>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="ok-card">
+    <div class="ok-mark">✓</div>
+    <h4 id="ok-title">Salvo</h4>
+    <p id="ok-sub">Pronto para o próximo lançamento.</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var MATERIALS_UNITS = {"Areia":"t","Brita 0":"t","Pó de Brita":"t","CAP":"t","Óleo de Queima":"L","Diesel":"L"};
+  var TRACO = { base:20, "Areia":7.2, "Brita 0":5.4, "Pó de Brita":6.2 }; // toneladas de cada agregado por 20 t de massa
+  var ESTOQUE_INICIAL = {"Areia":55,"Brita 0":20,"Pó de Brita":27.5,"CAP":298,"Óleo de Queima":2300,"Diesel":40};
+  var ALL_MATERIALS = ["Areia","Brita 0","Pó de Brita","CAP","Óleo de Queima","Diesel"];
+
+  // Ponte com a planilha do Google (Apps Script Web App). Cole aqui a URL depois de publicar o
+  // script — enquanto estiver vazia, o envio pra planilha fica desligado e o app funciona normal.
+  var SHEETS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwkpcfAPqnN3WxQRhfaAVQ4_yvnPFtMESbq7VUK2TcVyj9MY9BQ16nh9c7gJwsBnrh3tg/exec";
+  function tracoDe(producaoT){
+    var f = (producaoT||0) / TRACO.base;
+    return { areia: TRACO["Areia"]*f, brita: TRACO["Brita 0"]*f, po: TRACO["Pó de Brita"]*f };
+  }
+
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function todayStr(){ return new Date().toISOString().slice(0,10); }
+  function nowTime(){ var d=new Date(); return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); }
+  function fmt(n,d){ d=(d===undefined)?1:d; if(n===undefined||n===null||isNaN(n)) return "—"; return Number(n).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d}); }
+  function fmtMoney(n){ if(n===undefined||n===null||isNaN(n)) return "—"; return "R$ " + Number(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+  function lsGet(k, fallback){ try{ var r=localStorage.getItem(k); return r?JSON.parse(r):fallback; }catch(e){ return fallback; } }
+  function lsSet(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+
+  // ---------- db (cloud sync) ----------
+  var dbNs = null, dbReady = false;
+  var pendProducao = lsGet("campo_pend_producao", []);
+  var pendEstoque = lsGet("campo_pend_estoque", []);
+  var pendCompras = lsGet("campo_pend_compras", []);
+  var syncedTodayProducao = [];
+  var syncedTodayEstoque = [];
+  var syncedTodayCompras = [];
+  var recentObras = [], recentOperadores = [], recentFornecedores = [], recentFornecedoresCompra = [];
+
+  function setSyncStatus(){
+    var el = document.getElementById("sync-status");
+    if(dbReady){
+      var pend = pendProducao.length + pendEstoque.length + pendCompras.length;
+      if(pend > 0){ el.textContent = pend + " lançamento(s) aguardando sincronizar"; el.className="sync-status pend"; return; }
+      el.textContent = "sincronizado"; el.className="sync-status";
+      return;
+    }
+    if(!sheetConfigurada()){ el.textContent = "sem banco e sem planilha configurados — salvando só neste aparelho"; el.className="sync-status err"; return; }
+    if(pendSheet.length > 0){ el.textContent = pendSheet.length + " lançamento(s) aguardando enviar pra planilha"; el.className="sync-status pend"; return; }
+    el.textContent = "sincronizado com a planilha"; el.className="sync-status";
+  }
+
+  // Fora do ambiente do Claude (ex.: GitHub Pages) `window.claude` nem existe — nesse caso o
+  // formulário funciona 100% a partir da planilha: grava via POST (Apps Script) e lê o estoque
+  // já calculado de volta via GET, sem precisar do banco do Claude.
+  async function initDb(){
+    try{
+      dbNs = (typeof claude !== "undefined") ? await claude.use("db") : null;
+    }catch(e){ dbNs = null; }
+    dbReady = !!dbNs;
+    setSyncStatus();
+    if(dbReady){
+      loadRecents();
+      flushPending();
+      refreshEstoqueAtual();
+    } else {
+      renderChips();
+      if(sheetConfigurada()){
+        var boot = await carregarBootstrapPlanilha();
+        if(boot && boot.ok){
+          recentOperadores = boot.recentes.operadores || [];
+          recentObras = boot.recentes.obras || [];
+          recentFornecedores = boot.recentes.fornecedoresEstoque || [];
+          recentFornecedoresCompra = boot.recentes.fornecedoresCompras || [];
+          renderChips();
+          renderEstoqueFromSheet(boot);
+        } else {
+          ["stock-strip-producao","stock-strip-materiais","stock-strip-compras"].forEach(function(id){
+            var el = document.getElementById(id);
+            if(el) el.innerHTML = '<div class="stock-empty">Não foi possível carregar o estoque da planilha agora. Toque para tentar de novo.</div>';
+          });
+        }
+      }
+      flushPendingSheet();
+    }
+  }
+
+  // ---------- estoque disponível ----------
+  // Com banco (db): calcula na hora a partir das coleções inteiras. Sem banco (ex.: GitHub
+  // Pages): lê o estoque já calculado pelas fórmulas da própria planilha, via Apps Script.
+  var estoqueAtualCache = null;
+  async function atualizarEstoqueDisplay(){
+    if(dbReady){ await refreshEstoqueAtual(); return; }
+    if(!sheetConfigurada()){
+      ["stock-strip-producao","stock-strip-materiais","stock-strip-compras"].forEach(function(id){
+        var el = document.getElementById(id);
+        if(el) el.innerHTML = '<div class="stock-empty">Configure a URL da planilha pra ver o estoque aqui.</div>';
+      });
+      return;
+    }
+    var boot = await carregarBootstrapPlanilha();
+    if(boot && boot.ok){ renderEstoqueFromSheet(boot); }
+    else{
+      ["stock-strip-producao","stock-strip-materiais","stock-strip-compras"].forEach(function(id){
+        var el = document.getElementById(id);
+        if(el) el.innerHTML = '<div class="stock-empty">Não foi possível carregar o estoque da planilha agora. Toque para tentar de novo.</div>';
+      });
+    }
+  }
+  // Lê a planilha via JSONP (tag <script>): um Apps Script Web App não manda cabeçalho de CORS,
+  // então um fetch() comum de outro domínio não conseguiria ler a resposta — a tag <script> sim.
+  function carregarBootstrapPlanilha(){
+    return new Promise(function(resolve){
+      if(!sheetConfigurada()){ resolve(null); return; }
+      var cbName = "boot_" + Date.now() + "_" + Math.floor(Math.random()*100000);
+      var acabou = false;
+      var tag = document.createElement("script");
+      window[cbName] = function(data){
+        acabou = true; resolve(data); delete window[cbName]; tag.remove();
+      };
+      tag.src = SHEETS_WEBAPP_URL + (SHEETS_WEBAPP_URL.indexOf("?")>-1?"&":"?") + "callback=" + cbName + "&t=" + Date.now();
+      tag.onerror = function(){ if(!acabou){ acabou = true; resolve(null); delete window[cbName]; tag.remove(); } };
+      document.head.appendChild(tag);
+      setTimeout(function(){ if(!acabou){ acabou = true; resolve(null); delete window[cbName]; } }, 10000);
+    });
+  }
+  var STATUS_TIER = { "OK":"ok", "ATENÇÃO":"warn", "CRÍTICO":"bad", "CONFERIR LANÇAMENTO":"bad" };
+  function renderEstoqueFromSheet(boot){
+    var html = ALL_MATERIALS.map(function(m){
+      var d = (boot.estoque && boot.estoque[m]) || {};
+      var tier = STATUS_TIER[d.status] || "ok";
+      var barPct = tier==="bad" ? 0 : (tier==="warn" ? 30 : 80);
+      var barColor = tier==="bad" ? "var(--rust)" : (tier==="warn" ? "var(--amber)" : "var(--teal)");
+      return '<div class="stock-chip '+tier+'"><div class="sc-mat">'+m+'</div><div class="sc-val">'+fmt(d.atual||0, 2)+' '+(d.unidade||MATERIALS_UNITS[m])+'</div>' +
+        '<div class="sc-bar"><div style="width:'+barPct+'%; background:'+barColor+';"></div></div></div>';
+    }).join("");
+    var cap = boot.capacidade || { tons:0, material:"" };
+    var tierCap = cap.tons<=0 ? "bad" : (cap.tons<50 ? "warn" : "");
+    var bannerHtml = '<div class="cb-num">'+fmt(cap.tons||0,0)+' <small>t possíveis</small></div><div class="cb-label">limitado por '+(cap.material||"—")+'</div>';
+    var upd = new Date();
+    var updText = "atualizado " + String(upd.getHours()).padStart(2,"0") + ":" + String(upd.getMinutes()).padStart(2,"0");
+    ["producao","materiais","compras"].forEach(function(suf){
+      var strip = document.getElementById("stock-strip-"+suf);
+      if(strip) strip.innerHTML = html;
+      var cb = document.getElementById("capacity-banner-"+suf);
+      if(cb){ cb.className = "capacity-banner "+tierCap; cb.innerHTML = bannerHtml; }
+      var lbl = document.getElementById("estoque-resumo-updated-"+suf);
+      if(lbl) lbl.textContent = updText;
+    });
+  }
+  async function refreshEstoqueAtual(){
+    try{
+      var consumo = {"Areia":0,"Brita 0":0,"Pó de Brita":0,"CAP":0,"Óleo de Queima":0,"Diesel":0};
+      var entradas = {"Areia":0,"Brita 0":0,"Pó de Brita":0,"CAP":0,"Óleo de Queima":0,"Diesel":0};
+      var producaoTotalHist = 0, capTotalHist = 0;
+      var snapP = await dbNs.collection("producao").limit(1000).get();
+      snapP.docs.forEach(function(doc){
+        var r = doc.data(); var t = tracoDe(r.producao);
+        consumo["Areia"] += t.areia||0; consumo["Brita 0"] += t.brita||0; consumo["Pó de Brita"] += t.po||0;
+        consumo["CAP"] += r.cap||0; consumo["Óleo de Queima"] += r.oleo||0; consumo["Diesel"] += r.diesel||0;
+        producaoTotalHist += r.producao||0; capTotalHist += r.cap||0;
+      });
+      pendProducao.forEach(function(r){
+        var t = tracoDe(r.producao);
+        consumo["Areia"] += t.areia||0; consumo["Brita 0"] += t.brita||0; consumo["Pó de Brita"] += t.po||0;
+        consumo["CAP"] += r.cap||0; consumo["Óleo de Queima"] += r.oleo||0; consumo["Diesel"] += r.diesel||0;
+        producaoTotalHist += r.producao||0; capTotalHist += r.cap||0;
+      });
+      var snapE = await dbNs.collection("estoque").limit(1000).get();
+      snapE.docs.forEach(function(doc){ var r = doc.data(); entradas[r.material] = (entradas[r.material]||0) + (r.qtd||0); });
+      pendEstoque.forEach(function(r){ entradas[r.material] = (entradas[r.material]||0) + (r.qtd||0); });
+
+      estoqueAtualCache = {};
+      ALL_MATERIALS.forEach(function(m){ estoqueAtualCache[m] = ESTOQUE_INICIAL[m] + (entradas[m]||0) - (consumo[m]||0); });
+      var capRatioMedio = producaoTotalHist>0 ? capTotalHist/producaoTotalHist : null;
+      renderStockStrips();
+      renderCapacityBanner(capRatioMedio);
+    }catch(e){
+      ["stock-strip-producao","stock-strip-materiais","stock-strip-compras"].forEach(function(id){
+        var el = document.getElementById(id);
+        if(el) el.innerHTML = '<div class="stock-empty">Não foi possível carregar o estoque agora. Toque para tentar de novo.</div>';
+      });
+    }
+  }
+  function renderCapacityBanner(capRatioMedio){
+    if(!estoqueAtualCache) return;
+    var candidatos = [];
+    var areiaPorT = TRACO["Areia"]/TRACO.base, britaPorT = TRACO["Brita 0"]/TRACO.base, poPorT = TRACO["Pó de Brita"]/TRACO.base;
+    candidatos.push({ nome:"Areia", tons: Math.max(0, estoqueAtualCache["Areia"])/areiaPorT });
+    candidatos.push({ nome:"Brita 0", tons: Math.max(0, estoqueAtualCache["Brita 0"])/britaPorT });
+    candidatos.push({ nome:"Pó de brita", tons: Math.max(0, estoqueAtualCache["Pó de Brita"])/poPorT });
+    if(capRatioMedio && capRatioMedio>0){
+      candidatos.push({ nome:"CAP", tons: Math.max(0, estoqueAtualCache["CAP"])/capRatioMedio });
+    }
+    candidatos.sort(function(a,b){ return a.tons-b.tons; });
+    var limitante = candidatos[0];
+    var tier = limitante.tons<=0 ? "bad" : (limitante.tons<50 ? "warn" : "");
+    var capNote = capRatioMedio ? "" : " · CAP ainda sem histórico suficiente p/ estimar";
+    var html = '<div class="cb-num">'+fmt(limitante.tons,0)+' <small>t possíveis</small></div>' +
+      '<div class="cb-label">limitado por '+limitante.nome+capNote+'</div>';
+    ["capacity-banner-producao","capacity-banner-materiais","capacity-banner-compras"].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el){ el.className = "capacity-banner "+tier; el.innerHTML = html; }
+    });
+  }
+  function renderStockStrips(){
+    if(!estoqueAtualCache) return;
+    var html = ALL_MATERIALS.map(function(m){
+      var real = estoqueAtualCache[m];
+      var atual = Math.max(real, 0);
+      var pctFill = real<=0 ? 0 : Math.min(100, (real/ESTOQUE_INICIAL[m])*100);
+      var tier = "ok";
+      if(real<=0) tier="bad"; else if(pctFill<=10) tier="bad"; else if(pctFill<=25) tier="warn";
+      var barColor = tier==="bad" ? "var(--rust)" : (tier==="warn" ? "var(--amber)" : "var(--teal)");
+      return '<div class="stock-chip '+tier+'"><div class="sc-mat">'+m+'</div><div class="sc-val">'+fmt(atual, 2)+' '+MATERIALS_UNITS[m]+'</div>' +
+        '<div class="sc-bar"><div style="width:'+pctFill+'%; background:'+barColor+';"></div></div></div>';
+    }).join("");
+    var upd = new Date();
+    var updText = "atualizado "+String(upd.getHours()).padStart(2,"0")+":"+String(upd.getMinutes()).padStart(2,"0");
+    ["producao","materiais","compras"].forEach(function(suf){
+      var strip = document.getElementById("stock-strip-"+suf);
+      if(strip) strip.innerHTML = html;
+      var lbl = document.getElementById("estoque-resumo-updated-"+suf);
+      if(lbl) lbl.textContent = updText;
+    });
+  }
+
+  async function flushPending(){
+    if(!dbReady) return;
+    var stillPendP = [];
+    for(var i=0;i<pendProducao.length;i++){
+      try{ await dbNs.collection("producao").doc(pendProducao[i].id).set(pendProducao[i]); }
+      catch(e){ stillPendP.push(pendProducao[i]); }
+    }
+    pendProducao = stillPendP; lsSet("campo_pend_producao", pendProducao);
+    var stillPendE = [];
+    for(var j=0;j<pendEstoque.length;j++){
+      try{ await dbNs.collection("estoque").doc(pendEstoque[j].id).set(pendEstoque[j]); }
+      catch(e){ stillPendE.push(pendEstoque[j]); }
+    }
+    pendEstoque = stillPendE; lsSet("campo_pend_estoque", pendEstoque);
+    var stillPendC = [];
+    for(var k=0;k<pendCompras.length;k++){
+      try{ await dbNs.collection("compras").doc(pendCompras[k].id).set(pendCompras[k]); }
+      catch(e){ stillPendC.push(pendCompras[k]); }
+    }
+    pendCompras = stillPendC; lsSet("campo_pend_compras", pendCompras);
+    setSyncStatus();
+    renderToday();
+    refreshEstoqueAtual();
+  }
+
+  // ---------- ponte com a planilha do Google (Apps Script) ----------
+  // O banco (db) já garante que o app funcione; isto aqui é uma segunda gravação, em paralelo,
+  // pra alimentar a planilha que o Looker lê. Se falhar (sem sinal), fica numa fila e tenta de novo
+  // sozinho. A resposta do Apps Script não pode ser lida pelo navegador (CORS), então só sabemos
+  // se o envio foi disparado, não se a linha realmente chegou a ser escrita — por isso o servidor
+  // evita duplicar (confere o ID antes de gravar), mesmo se a gente reenviar por engano.
+  var pendSheet = lsGet("campo_pend_sheet", []); // [{tipo, rec}]
+  function sheetConfigurada(){ return !!SHEETS_WEBAPP_URL && SHEETS_WEBAPP_URL.indexOf("http") === 0; }
+  async function enviarParaPlanilha(tipo, rec){
+    if(!sheetConfigurada()) return false;
+    try{
+      await fetch(SHEETS_WEBAPP_URL, {
+        method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ tipo: tipo, rec: rec })
+      });
+      return true;
+    }catch(err){
+      pendSheet.push({ tipo: tipo, rec: rec });
+      lsSet("campo_pend_sheet", pendSheet);
+      return false;
+    }
+  }
+  async function flushPendingSheet(){
+    if(!sheetConfigurada() || pendSheet.length===0) return;
+    var fila = pendSheet; pendSheet = []; lsSet("campo_pend_sheet", pendSheet);
+    for(var i=0;i<fila.length;i++){
+      try{
+        await fetch(SHEETS_WEBAPP_URL, {
+          method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(fila[i])
+        });
+      }catch(err){
+        pendSheet.push(fila[i]);
+      }
+    }
+    lsSet("campo_pend_sheet", pendSheet);
+    setSyncStatus();
+  }
+
+  async function loadRecents(){
+    try{
+      var snap = await dbNs.collection("producao").orderBy("criadoEm","desc").limit(60).get();
+      var obras=[], ops=[];
+      snap.docs.forEach(function(doc){
+        var d = doc.data();
+        if(d.obra && obras.indexOf(d.obra)===-1) obras.push(d.obra);
+        if(d.operador && ops.indexOf(d.operador)===-1) ops.push(d.operador);
+        if(d.data===todayStr()) syncedTodayProducao.push(d);
+      });
+      recentObras = obras.slice(0,6); recentOperadores = ops.slice(0,6);
+    }catch(e){}
+    try{
+      var snap2 = await dbNs.collection("estoque").orderBy("criadoEm","desc").limit(60).get();
+      var forns=[];
+      snap2.docs.forEach(function(doc){
+        var d = doc.data();
+        if(d.fornecedor && forns.indexOf(d.fornecedor)===-1) forns.push(d.fornecedor);
+        if(d.data===todayStr()) syncedTodayEstoque.push(d);
+      });
+      recentFornecedores = forns.slice(0,6);
+    }catch(e){}
+    try{
+      var snap3 = await dbNs.collection("compras").orderBy("criadoEm","desc").limit(60).get();
+      var forns2=[];
+      snap3.docs.forEach(function(doc){
+        var d = doc.data();
+        if(d.fornecedor && forns2.indexOf(d.fornecedor)===-1) forns2.push(d.fornecedor);
+        if(d.data===todayStr()) syncedTodayCompras.push(d);
+      });
+      recentFornecedoresCompra = forns2.slice(0,6);
+    }catch(e){}
+    renderChips();
+    renderToday();
+  }
+
+  // ---------- chip helper ----------
+  function singleSelectGroup(containerId, otherWrapId, otherInputId, onChange){
+    var container = document.getElementById(containerId);
+    var state = { value: null };
+    container.addEventListener("click", function(e){
+      var btn = e.target.closest(".chip");
+      if(!btn || btn.parentElement!==container) return;
+      Array.from(container.children).forEach(function(c){ c.classList.remove("selected"); });
+      btn.classList.add("selected");
+      state.value = btn.getAttribute("data-val");
+      if(otherWrapId){
+        var wrap = document.getElementById(otherWrapId);
+        if(state.value === "__other__"){ wrap.style.display="block"; document.getElementById(otherInputId).focus(); }
+        else wrap.style.display="none";
+      }
+      if(onChange) onChange(state.value);
+    });
+    return {
+      get: function(){
+        if(state.value === "__other__" && otherInputId) return document.getElementById(otherInputId).value.trim();
+        return state.value;
+      },
+      set: function(val){
+        state.value = val;
+        Array.from(container.children).forEach(function(c){ c.classList.toggle("selected", c.getAttribute("data-val")===val); });
+      },
+      reset: function(){
+        state.value = null;
+        Array.from(container.children).forEach(function(c){ c.classList.remove("selected"); });
+        if(otherWrapId) document.getElementById(otherWrapId).style.display="none";
+      }
+    };
+  }
+
+  function buildRecentChips(containerId, otherWrapId, values, placeholderLabel){
+    var container = document.getElementById(containerId);
+    var html = values.map(function(v){ return '<button type="button" class="chip" data-val="'+v.replace(/"/g,'&quot;')+'">'+v+'</button>'; }).join("");
+    html += '<button type="button" class="chip" data-val="__other__">+ outro</button>';
+    container.innerHTML = html;
+  }
+
+  var selObra, selOperador, selMotivo, selMaterial, selFornecedor, selFornecedorCompra, selMaterialCompra;
+
+  function renderChips(){
+    buildRecentChips("chips-obra", "other-obra-wrap", recentObras);
+    buildRecentChips("chips-operador", "other-operador-wrap", recentOperadores);
+    buildRecentChips("chips-fornecedor", "other-fornecedor-wrap", recentFornecedores);
+    buildRecentChips("chips-fornecedor-compra", "other-fornecedor-compra-wrap", recentFornecedoresCompra);
+
+    selObra = singleSelectGroup("chips-obra","other-obra-wrap","obra-other");
+    selOperador = singleSelectGroup("chips-operador","other-operador-wrap","operador-other");
+    selMotivo = singleSelectGroup("chips-motivo", null, null);
+    selFornecedor = singleSelectGroup("chips-fornecedor","other-fornecedor-wrap","fornecedor-other");
+    selFornecedorCompra = singleSelectGroup("chips-fornecedor-compra","other-fornecedor-compra-wrap","fornecedor-compra-other");
+    selMaterial = singleSelectGroup("chips-material", null, null, function(val){
+      var u = MATERIALS_UNITS[val] || "—";
+      document.getElementById("e-unit-label").textContent = u;
+      document.getElementById("e-unit-badge").textContent = u;
+    });
+    selMaterialCompra = singleSelectGroup("chips-material-compra", null, null);
+
+    // defaults / remembered values
+    var lastObra = lsGet("campo_last_obra", null);
+    var lastOperador = lsGet("campo_last_operador", null);
+    if(lastObra && recentObras.indexOf(lastObra)>-1) selObra.set(lastObra);
+    if(lastOperador && recentOperadores.indexOf(lastOperador)>-1) selOperador.set(lastOperador);
+  }
+  renderChips();
+
+  // ---------- switcher ----------
+  function showScreen(name){
+    document.querySelectorAll(".switch-btn").forEach(function(b){ b.classList.toggle("active", b.getAttribute("data-screen")===name); });
+    document.getElementById("screen-producao").classList.toggle("active", name==="producao");
+    document.getElementById("screen-materiais").classList.toggle("active", name==="materiais");
+    document.getElementById("screen-compras").classList.toggle("active", name==="compras");
+    lsSet("campo_last_screen", name);
+  }
+  document.getElementById("sw-producao").addEventListener("click", function(){ showScreen("producao"); });
+  document.getElementById("sw-materiais").addEventListener("click", function(){ showScreen("materiais"); });
+  document.getElementById("sw-compras").addEventListener("click", function(){ showScreen("compras"); });
+  showScreen(lsGet("campo_last_screen","producao"));
+
+  // ---------- produção: horário ----------
+  document.getElementById("p-hi").value = nowTime();
+  document.getElementById("btn-marcar-fim").addEventListener("click", function(){
+    document.getElementById("p-hf").value = nowTime();
+    updateHoras();
+  });
+  function calcHoras(hi,hf){
+    if(!hi||!hf) return null;
+    var a=hi.split(":"), b=hf.split(":");
+    var start=(+a[0])*60+(+a[1]), end=(+b[0])*60+(+b[1]);
+    var diff=end-start; if(diff<0) diff+=24*60;
+    return diff/60;
+  }
+  function updateHoras(){
+    var h = calcHoras(document.getElementById("p-hi").value, document.getElementById("p-hf").value);
+    document.getElementById("p-horas-readout").textContent = h!==null ? fmt(h,2)+" h trabalhadas" : "marque o horário de fim";
+  }
+  document.getElementById("p-hi").addEventListener("input", updateHoras);
+  document.getElementById("p-hf").addEventListener("input", updateHoras);
+
+  document.getElementById("stock-strip-producao").addEventListener("click", function(e){ if(e.target.closest(".stock-empty")) atualizarEstoqueDisplay(); });
+  document.getElementById("stock-strip-materiais").addEventListener("click", function(e){ if(e.target.closest(".stock-empty")) atualizarEstoqueDisplay(); });
+  document.getElementById("stock-strip-compras").addEventListener("click", function(e){ if(e.target.closest(".stock-empty")) atualizarEstoqueDisplay(); });
+
+  // ---------- produção: traço da mistura (padrão automático, com ajuste opcional) ----------
+  var tracoAjustando = false;
+  function updateTracoReadout(){
+    if(tracoAjustando) return; // em modo de ajuste, os campos editáveis assumem o lugar do readout
+    var producaoT = parseFloat(document.getElementById("p-producao").value);
+    var readout = document.getElementById("traco-readout");
+    if(isNaN(producaoT) || producaoT<=0){
+      readout.innerHTML = "Informe a produção para calcular";
+      return;
+    }
+    var t = tracoDe(producaoT);
+    readout.innerHTML = "Areia <b>"+fmt(t.areia,2)+" t</b> · Brita 0 <b>"+fmt(t.brita,2)+" t</b> · Pó de brita <b>"+fmt(t.po,2)+" t</b> <span style='color:var(--muted-2)'>(padrão)</span>";
+  }
+  document.getElementById("p-producao").addEventListener("input", updateTracoReadout);
+  document.getElementById("btn-ajustar-traco").addEventListener("click", function(){
+    tracoAjustando = !tracoAjustando;
+    var editBox = document.getElementById("traco-edit");
+    var readout = document.getElementById("traco-readout");
+    var btn = document.getElementById("btn-ajustar-traco");
+    if(tracoAjustando){
+      var producaoT = parseFloat(document.getElementById("p-producao").value) || 0;
+      var t = tracoDe(producaoT);
+      document.getElementById("p-areia-custom").value = Math.round(t.areia*100)/100;
+      document.getElementById("p-brita-custom").value = Math.round(t.brita*100)/100;
+      document.getElementById("p-po-custom").value = Math.round(t.po*100)/100;
+      readout.style.display = "none";
+      editBox.style.display = "block";
+      btn.textContent = "Usar padrão";
+      document.getElementById("p-traco-motivo").focus();
+    } else {
+      readout.style.display = "block";
+      editBox.style.display = "none";
+      btn.textContent = "Ajustar";
+      document.getElementById("p-traco-motivo").value = "";
+      updateTracoReadout();
+    }
+  });
+  function tracoFinal(producaoT){
+    var t = tracoDe(producaoT);
+    if(!tracoAjustando){ return { areia:t.areia, brita:t.brita, po:t.po, ajustado:false, motivo:"" }; }
+    var ac = parseFloat(document.getElementById("p-areia-custom").value);
+    var bc = parseFloat(document.getElementById("p-brita-custom").value);
+    var pc = parseFloat(document.getElementById("p-po-custom").value);
+    return {
+      areia: isNaN(ac)?t.areia:ac, brita: isNaN(bc)?t.brita:bc, po: isNaN(pc)?t.po:pc,
+      ajustado:true, motivo: document.getElementById("p-traco-motivo").value.trim()
+    };
+  }
+  function resetTraco(){
+    tracoAjustando = false;
+    document.getElementById("traco-readout").style.display = "block";
+    document.getElementById("traco-edit").style.display = "none";
+    document.getElementById("btn-ajustar-traco").textContent = "Ajustar";
+    document.getElementById("p-traco-motivo").value = "";
+    updateTracoReadout();
+  }
+
+  // ---------- produção: toggle parada ----------
+
+
+  var paradaOn = false;
+  document.getElementById("toggle-parada").addEventListener("click", function(){
+    paradaOn = !paradaOn;
+    document.getElementById("switch-parada").classList.toggle("on", paradaOn);
+    document.getElementById("parada-detail").style.display = paradaOn ? "block" : "none";
+  });
+
+  // ---------- overlay ----------
+  function showOverlay(title, sub){
+    document.getElementById("ok-title").textContent = title;
+    document.getElementById("ok-sub").textContent = sub;
+    var ov = document.getElementById("overlay");
+    ov.classList.add("show");
+    setTimeout(function(){ ov.classList.remove("show"); }, 1100);
+  }
+
+  // ---------- today lists ----------
+  function renderToday(){
+    var all1 = syncedTodayProducao.concat(pendProducao.filter(function(r){ return r.data===todayStr(); }));
+    all1.sort(function(a,b){ return (b.criadoEm||0)-(a.criadoEm||0); });
+    var c1 = document.getElementById("today-producao");
+    if(all1.length===0){ c1.innerHTML = '<div class="ti-empty">Nenhum lançamento hoje ainda.</div>'; }
+    else{
+      c1.innerHTML = all1.slice(0,6).map(function(r){
+        var synced = !pendProducao.some(function(p){ return p.id===r.id; });
+        return '<div class="today-item"><div class="ti-main">'+(r.obra||"—")+' · <b>'+fmt(r.producao,1)+' t</b> · '+(r.operador||"—")+'</div>' +
+          '<span class="ti-sync '+(synced?"ok":"pend")+'">'+(synced?"sincronizado":"pendente")+'</span></div>';
+      }).join("");
+    }
+    var all2 = syncedTodayEstoque.concat(pendEstoque.filter(function(r){ return r.data===todayStr(); }));
+    all2.sort(function(a,b){ return (b.criadoEm||0)-(a.criadoEm||0); });
+    var c2 = document.getElementById("today-estoque");
+    if(all2.length===0){ c2.innerHTML = '<div class="ti-empty">Nenhuma entrada hoje ainda.</div>'; }
+    else{
+      c2.innerHTML = all2.slice(0,6).map(function(r){
+        var synced = !pendEstoque.some(function(p){ return p.id===r.id; });
+        return '<div class="today-item"><div class="ti-main">'+r.material+' · <b>'+fmt(r.qtd,2)+' '+r.unidade+'</b> · '+(r.fornecedor||"—")+'</div>' +
+          '<span class="ti-sync '+(synced?"ok":"pend")+'">'+(synced?"sincronizado":"pendente")+'</span></div>';
+      }).join("");
+    }
+    var all3 = syncedTodayCompras.concat(pendCompras.filter(function(r){ return r.data===todayStr(); }));
+    all3.sort(function(a,b){ return (b.criadoEm||0)-(a.criadoEm||0); });
+    var c3 = document.getElementById("today-compras");
+    if(all3.length===0){ c3.innerHTML = '<div class="ti-empty">Nenhuma compra hoje ainda.</div>'; }
+    else{
+      c3.innerHTML = all3.slice(0,6).map(function(r){
+        var synced = !pendCompras.some(function(p){ return p.id===r.id; });
+        return '<div class="today-item"><div class="ti-main">'+(r.material||"—")+' · <b>'+fmtMoney(r.valor)+'</b> · '+(r.fornecedor||"—")+'</div>' +
+          '<span class="ti-sync '+(synced?"ok":"pend")+'">'+(synced?"sincronizado":"pendente")+'</span></div>';
+      }).join("");
+    }
+  }
+  renderToday();
+
+  // ---------- submit: produção ----------
+  document.getElementById("form-producao").addEventListener("submit", async function(e){
+    e.preventDefault();
+    var obra = selObra.get(), operador = selOperador.get();
+    var producao = parseFloat(document.getElementById("p-producao").value);
+    if(!obra || !operador || isNaN(producao)){
+      alert("Preencha obra, operador e a produção em toneladas.");
+      return;
+    }
+    var paradaH = paradaOn ? (parseFloat(document.getElementById("p-parada").value) || 0) : 0;
+    var motivoParada = selMotivo.get() || "Outro";
+    var traco = tracoFinal(producao);
+    if(traco.ajustado && !traco.motivo){
+      alert("Você ajustou o traço da mistura — informe o motivo de sair do padrão.");
+      document.getElementById("p-traco-motivo").focus();
+      return;
+    }
+    var rec = {
+      id: uid(), data: todayStr(), operador: operador, obra: obra, tipo: "CBUQ",
+      hi: document.getElementById("p-hi").value, hf: document.getElementById("p-hf").value,
+      horas: calcHoras(document.getElementById("p-hi").value, document.getElementById("p-hf").value),
+      producao: producao,
+      areia: traco.areia, brita: traco.brita, po: traco.po,
+      tracoAjustado: traco.ajustado, tracoMotivo: traco.motivo,
+      cap: parseFloat(document.getElementById("p-cap").value) || 0,
+      oleo: parseFloat(document.getElementById("p-oleo").value) || 0,
+      diesel: parseFloat(document.getElementById("p-diesel").value) || 0,
+      parada: paradaH,
+      motivo: paradaOn ? motivoParada : "Sem parada",
+      obs: document.getElementById("p-obs").value.trim(),
+      criadoEm: Date.now()
+    };
+
+    lsSet("campo_last_obra", obra); lsSet("campo_last_operador", operador);
+
+    var btn = document.getElementById("btn-submit-producao");
+    btn.disabled = true;
+    var synced = false;
+    if(dbReady){
+      try{ await dbNs.collection("producao").doc(rec.id).set(rec); synced = true; }catch(err){ synced = false; }
+    } else {
+      synced = await enviarParaPlanilha("producao", rec);
+    }
+    if(synced){ syncedTodayProducao.unshift(rec); }
+    else{ pendProducao.unshift(rec); lsSet("campo_pend_producao", pendProducao); }
+    btn.disabled = false;
+
+    showOverlay("Lançamento salvo", synced ? (dbReady ? "Sincronizado com a equipe." : "Enviado pra planilha.") : "Salvo neste aparelho — sincroniza sozinho quando houver sinal.");
+    setSyncStatus();
+    renderToday();
+    atualizarEstoqueDisplay();
+
+    // reset apenas os campos do lote — obra/operador/tipo continuam selecionados
+    document.getElementById("p-producao").value = "";
+    document.getElementById("p-cap").value = "";
+    document.getElementById("p-oleo").value = "";
+    document.getElementById("p-diesel").value = "";
+    document.getElementById("p-parada").value = "";
+    document.getElementById("p-obs").value = "";
+    selMotivo.reset();
+    paradaOn = false;
+    document.getElementById("switch-parada").classList.remove("on");
+    document.getElementById("parada-detail").style.display = "none";
+    document.getElementById("p-hi").value = nowTime();
+    document.getElementById("p-hf").value = "";
+    updateHoras();
+    resetTraco();
+  });
+
+  // ---------- submit: estoque ----------
+  document.getElementById("form-estoque").addEventListener("submit", async function(e){
+    e.preventDefault();
+    var material = selMaterial.get();
+    var qtd = parseFloat(document.getElementById("e-qtd").value);
+    if(!material || isNaN(qtd)){
+      alert("Selecione o material e informe a quantidade.");
+      return;
+    }
+    var rec = {
+      id: uid(), data: todayStr(), material: material, qtd: qtd, unidade: MATERIALS_UNITS[material],
+      fornecedor: selFornecedor.get() || "", doc: document.getElementById("e-doc").value.trim(),
+      resp: document.getElementById("e-resp").value.trim(), obs: document.getElementById("e-obs").value.trim(),
+      criadoEm: Date.now()
+    };
+    if(rec.resp) lsSet("campo_last_resp", rec.resp);
+
+    var btn = document.getElementById("btn-submit-estoque");
+    btn.disabled = true;
+    var synced = false;
+    if(dbReady){
+      try{ await dbNs.collection("estoque").doc(rec.id).set(rec); synced = true; }catch(err){ synced = false; }
+    } else {
+      synced = await enviarParaPlanilha("estoque", rec);
+    }
+    if(synced){ syncedTodayEstoque.unshift(rec); }
+    else{ pendEstoque.unshift(rec); lsSet("campo_pend_estoque", pendEstoque); }
+    btn.disabled = false;
+
+    showOverlay("Entrada salva", synced ? (dbReady ? "Sincronizado com a equipe." : "Enviado pra planilha.") : "Salvo neste aparelho — sincroniza sozinho quando houver sinal.");
+    setSyncStatus();
+    renderToday();
+    atualizarEstoqueDisplay();
+
+    document.getElementById("e-qtd").value = "";
+    document.getElementById("e-doc").value = "";
+    document.getElementById("e-obs").value = "";
+  });
+
+  // ---------- submit: compra ----------
+  document.getElementById("form-compra").addEventListener("submit", async function(e){
+    e.preventDefault();
+    var fornecedor = selFornecedorCompra.get();
+    var material = selMaterialCompra.get();
+    var valor = parseFloat(document.getElementById("c-valor").value);
+    if(!fornecedor || !material || isNaN(valor)){
+      alert("Selecione o fornecedor, o material e informe o valor pago.");
+      return;
+    }
+    var rec = {
+      id: uid(), data: todayStr(), fornecedor: fornecedor, material: material, valor: valor,
+      documento: document.getElementById("c-documento").value.trim(), obs: document.getElementById("c-obs").value.trim(),
+      criadoEm: Date.now()
+    };
+
+    var btn = document.getElementById("btn-submit-compra");
+    btn.disabled = true;
+    var synced = false;
+    if(dbReady){
+      try{ await dbNs.collection("compras").doc(rec.id).set(rec); synced = true; }catch(err){ synced = false; }
+    } else {
+      synced = await enviarParaPlanilha("compras", rec);
+    }
+    if(synced){ syncedTodayCompras.unshift(rec); }
+    else{ pendCompras.unshift(rec); lsSet("campo_pend_compras", pendCompras); }
+    btn.disabled = false;
+
+    showOverlay("Compra salva", synced ? (dbReady ? "Sincronizado com a equipe." : "Enviado pra planilha.") : "Salvo neste aparelho — sincroniza sozinho quando houver sinal.");
+    setSyncStatus();
+    renderToday();
+    atualizarEstoqueDisplay();
+
+    document.getElementById("c-valor").value = "";
+    document.getElementById("c-documento").value = "";
+    document.getElementById("c-obs").value = "";
+  });
+
+  // ---------- init misc ----------
+  var lastResp = lsGet("campo_last_resp", "");
+  if(lastResp) document.getElementById("e-resp").value = lastResp;
+  updateHoras();
+  updateTracoReadout();
+  setSyncStatus();
+  initDb();
+  setInterval(flushPending, 20000);
+  setInterval(flushPendingSheet, 20000);
+})();
+</script>
+</body>
+</html>
